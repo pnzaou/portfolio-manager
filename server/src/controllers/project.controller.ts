@@ -5,10 +5,7 @@ import { prisma } from '../lib/prisma';
 
 
 // Créer un projet
-export const createProject = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const createProject = async ( req: AuthRequest, res: Response ): Promise<void> => {
   try {
     const { name, description, technologies } = req.body;
     const files = req.files as Express.Multer.File[];
@@ -90,10 +87,7 @@ export const createProject = async (
 };
 
 // Lister tous les projets
-export const getAllProjects = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const getAllProjects = async ( req: AuthRequest, res: Response ): Promise<void> => {
   try {
     const projects = await prisma.project.findMany({
       where: { userId: req.userId },
@@ -111,10 +105,7 @@ export const getAllProjects = async (
 };
 
 // Récupérer un projet
-export const getProject = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const getProject = async ( req: AuthRequest, res: Response ): Promise<void> => {
   try {
     const { id } = req.params;
 
@@ -141,10 +132,7 @@ export const getProject = async (
 };
 
 // Modifier un projet
-export const updateProject = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const updateProject = async ( req: AuthRequest, res: Response ): Promise<void> => {
   try {
     const { id } = req.params;
     const { name, description, technologies } = req.body;
@@ -229,10 +217,7 @@ export const updateProject = async (
 };
 
 // Supprimer un projet
-export const deleteProject = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const deleteProject = async ( req: AuthRequest, res: Response ): Promise<void> => {
   try {
     const { id } = req.params;
 
@@ -262,10 +247,7 @@ export const deleteProject = async (
 };
 
 // Supprimer une image spécifique
-export const deleteImage = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
+export const deleteImage = async ( req: AuthRequest, res: Response ): Promise<void> => {
   try {
     const { imageId } = req.params;
 
