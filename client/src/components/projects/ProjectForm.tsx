@@ -8,10 +8,19 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ImageUpload } from './ImageUpload';
-import { useState } from 'react';
-import { X, Loader2, Plus } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Loader2, Plus, ChevronDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { Project } from '@/types';
+import api from '@/lib/api';
+import toast from 'react-hot-toast';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface ProjectFormProps {
   onSubmit: (data: FormData) => Promise<void>;
@@ -21,10 +30,13 @@ interface ProjectFormProps {
 
 export const ProjectForm = ({ onSubmit, initialData, isLoading }: ProjectFormProps) => {
   const [images, setImages] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState(initialData?.images || []);
   const [technologies, setTechnologies] = useState<string[]>(
     initialData?.technologies.map((t) => t.name) || []
   );
-  const [techInput, setTechInput] = useState('');
+  const [availableTechs, setAvailableTechs] = useState<string[]>([]);
+  const [useCustomInput, setUseCustomInput] = useState(false);
+  const [customTechInput, setCustomTechInput] = useState('');
 
   const {
     register,
@@ -40,12 +52,35 @@ export const ProjectForm = ({ onSubmit, initialData, isLoading }: ProjectFormPro
     },
   });
 
-  const addTechnology = () => {
-    if (techInput.trim() && !technologies.includes(techInput.trim())) {
-      const newTechs = [...technologies, techInput.trim()];
+  // Charger les technologies disponibles
+  useEffect(() => {
+    const fetchTechnologies = async () => {
+      try {
+        const response = await api.get('/projects/technologies');
+        setAvailableTechs(response.data.technologies);
+      } catch (error) {
+        console.error('Erreur lors du chargement des technologies');
+      }
+    };
+    fetchTechnologies();
+  }, []);
+
+  const addTechnologyFromSelect = (tech: string) => {
+    if (tech && !technologies.includes(tech)) {
+      const newTechs = [...technologies, tech];
       setTechnologies(newTechs);
       setValue('technologies', newTechs);
-      setTechInput('');
+    }
+  };
+
+  const addCustomTechnology = () => {
+    const tech = customTechInput.trim();
+    if (tech && !technologies.includes(tech)) {
+      const newTechs = [...technologies, tech];
+      setTechnologies(newTechs);
+      setValue('technologies', newTechs);
+      setCustomTechInput('');
+      setUseCustomInput(false);
     }
   };
 
@@ -53,6 +88,17 @@ export const ProjectForm = ({ onSubmit, initialData, isLoading }: ProjectFormPro
     const newTechs = technologies.filter((t) => t !== tech);
     setTechnologies(newTechs);
     setValue('technologies', newTechs);
+  };
+
+  const handleDeleteExistingImage = async (imageId: string) => {
+    try {
+      await api.delete(`/projects/image/${imageId}`);
+      toast.success('Image supprimée');
+      setExistingImages(existingImages.filter(img => img.id !== imageId));
+    } catch (error) {
+      toast.error('Erreur lors de la suppression de l\'image');
+      throw error;
+    }
   };
 
   const handleFormSubmit = async (data: ProjectFormData) => {
@@ -113,34 +159,82 @@ export const ProjectForm = ({ onSubmit, initialData, isLoading }: ProjectFormPro
             )}
           </div>
 
-          {/* Technologies */}
+          {/* Technologies avec Select/Input intelligent */}
           <div className="space-y-2">
             <Label htmlFor="technology">Technologies & Outils *</Label>
-            <div className="flex gap-2">
-              <Input
-                id="technology"
-                placeholder="Ex: React, TypeScript, Tailwind..."
-                value={techInput}
-                onChange={(e) => setTechInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addTechnology();
-                  }
-                }}
-                disabled={isLoading}
-              />
-              <Button
-                type="button"
-                onClick={addTechnology}
-                disabled={isLoading || !techInput.trim()}
-                size="icon"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
+            
+            {availableTechs.length > 0 && !useCustomInput ? (
+              // Mode Select : si des technologies existent
+              <div className="flex gap-2">
+                <Select onValueChange={addTechnologyFromSelect} disabled={isLoading}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Sélectionnez une technologie..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableTechs
+                      .filter(tech => !technologies.includes(tech))
+                      .map((tech) => (
+                        <SelectItem key={tech} value={tech}>
+                          {tech}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setUseCustomInput(true)}
+                  disabled={isLoading}
+                >
+                  Autre
+                </Button>
+              </div>
+            ) : (
+              // Mode Input : pour saisie personnalisée
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Tapez une nouvelle technologie..."
+                  value={customTechInput}
+                  onChange={(e) => setCustomTechInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addCustomTechnology();
+                    }
+                  }}
+                  disabled={isLoading}
+                />
+                <Button
+                  type="button"
+                  onClick={addCustomTechnology}
+                  disabled={isLoading || !customTechInput.trim()}
+                  size="icon"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+                {availableTechs.length > 0 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setUseCustomInput(false);
+                      setCustomTechInput('');
+                    }}
+                    disabled={isLoading}
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            )}
 
-            {/* Liste des technologies */}
+            <p className="text-xs text-muted-foreground">
+              {availableTechs.length > 0 && !useCustomInput
+                ? "Sélectionnez dans la liste ou cliquez sur 'Autre' pour saisir"
+                : "Saisissez une nouvelle technologie"}
+            </p>
+
+            {/* Liste des technologies sélectionnées */}
             {technologies.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-3">
                 {technologies.map((tech) => (
@@ -168,7 +262,8 @@ export const ProjectForm = ({ onSubmit, initialData, isLoading }: ProjectFormPro
           <ImageUpload
             images={images}
             onImagesChange={setImages}
-            existingImages={initialData?.images}
+            existingImages={existingImages}
+            onDeleteExisting={handleDeleteExistingImage}
           />
 
           {/* Boutons */}

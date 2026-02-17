@@ -11,7 +11,7 @@ export const createProject = async ( req: AuthRequest, res: Response ): Promise<
     const files = req.files as Express.Multer.File[];
 
     if (!name || !description) {
-      res.status(400).json({ message: 'Nom et description requis' });
+      res.status(400).json({ message: "Nom et description requis" });
       return;
     }
 
@@ -30,7 +30,7 @@ export const createProject = async ( req: AuthRequest, res: Response ): Promise<
         return new Promise<{ url: string; publicId: string }>(
           (resolve, reject) => {
             const uploadStream = cloudinary.uploader.upload_stream(
-              { folder: 'portfolio-projects' },
+              { folder: "portfolio-projects" },
               (error, result) => {
                 if (error) reject(error);
                 else
@@ -38,16 +38,15 @@ export const createProject = async ( req: AuthRequest, res: Response ): Promise<
                     url: result!.secure_url,
                     publicId: result!.public_id,
                   });
-              }
+              },
             );
             uploadStream.end(file.buffer);
-          }
+          },
         );
       });
 
       const uploadedImages = await Promise.all(uploadPromises);
 
-      // Sauvegarder les images en DB
       await prisma.image.createMany({
         data: uploadedImages.map((img) => ({
           url: img.url,
@@ -57,14 +56,19 @@ export const createProject = async ( req: AuthRequest, res: Response ): Promise<
       });
     }
 
-    // Ajouter les technologies
-    if (technologies && Array.isArray(technologies)) {
-      await prisma.technology.createMany({
-        data: technologies.map((tech: string) => ({
-          name: tech,
-          projectId: project.id,
-        })),
-      });
+    // Ajouter les technologies (gère 1 ou plusieurs)
+    if (technologies) {
+      const techArray = Array.isArray(technologies)
+        ? technologies
+        : [technologies];
+      if (techArray.length > 0) {
+        await prisma.technology.createMany({
+          data: techArray.map((tech: string) => ({
+            name: tech,
+            projectId: project.id,
+          })),
+        });
+      }
     }
 
     // Récupérer le projet complet
@@ -77,12 +81,12 @@ export const createProject = async ( req: AuthRequest, res: Response ): Promise<
     });
 
     res.status(201).json({
-      message: 'Projet créé avec succès',
+      message: "Projet créé avec succès",
       project: fullProject,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Erreur serveur', error });
+    res.status(500).json({ message: "Erreur serveur", error });
   }
 };
 
@@ -143,7 +147,7 @@ export const updateProject = async ( req: AuthRequest, res: Response ): Promise<
     });
 
     if (!project) {
-      res.status(404).json({ message: 'Projet non trouvé' });
+      res.status(404).json({ message: "Projet non trouvé" });
       return;
     }
 
@@ -162,7 +166,7 @@ export const updateProject = async ( req: AuthRequest, res: Response ): Promise<
         return new Promise<{ url: string; publicId: string }>(
           (resolve, reject) => {
             const uploadStream = cloudinary.uploader.upload_stream(
-              { folder: 'portfolio-projects' },
+              { folder: "portfolio-projects" },
               (error, result) => {
                 if (error) reject(error);
                 else
@@ -170,10 +174,10 @@ export const updateProject = async ( req: AuthRequest, res: Response ): Promise<
                     url: result!.secure_url,
                     publicId: result!.public_id,
                   });
-              }
+              },
             );
             uploadStream.end(file.buffer);
-          }
+          },
         );
       });
 
@@ -188,15 +192,21 @@ export const updateProject = async ( req: AuthRequest, res: Response ): Promise<
       });
     }
 
-    // Mise à jour des technologies
-    if (technologies && Array.isArray(technologies)) {
+    // Mise à jour des technologies (gère 1 ou plusieurs)
+    if (technologies !== undefined) {
       await prisma.technology.deleteMany({ where: { projectId: id } });
-      await prisma.technology.createMany({
-        data: technologies.map((tech: string) => ({
-          name: tech,
-          projectId: id,
-        })),
-      });
+
+      const techArray = Array.isArray(technologies)
+        ? technologies
+        : [technologies];
+      if (techArray.length > 0) {
+        await prisma.technology.createMany({
+          data: techArray.map((tech: string) => ({
+            name: tech,
+            projectId: id,
+          })),
+        });
+      }
     }
 
     const updatedProject = await prisma.project.findUnique({
@@ -207,12 +217,12 @@ export const updateProject = async ( req: AuthRequest, res: Response ): Promise<
       },
     });
 
-    res.status(200).json({
-      message: 'Projet mis à jour avec succès',
+    res.json({
+      message: "Projet mis à jour avec succès",
       project: updatedProject,
     });
   } catch (error) {
-    res.status(500).json({ message: 'Erreur serveur', error });
+    res.status(500).json({ message: "Erreur serveur", error });
   }
 };
 
@@ -265,6 +275,30 @@ export const deleteImage = async ( req: AuthRequest, res: Response ): Promise<vo
     await prisma.image.delete({ where: { id: imageId } });
 
     res.status(200).json({ message: 'Image supprimée avec succès' });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur serveur', error });
+  }
+};
+
+// Récupérer toutes les technologies utilisées
+export const getAllTechnologies = async ( req: AuthRequest, res: Response ): Promise<void> => {
+  try {
+    const technologies = await prisma.technology.findMany({
+      where: {
+        project: {
+          userId: req.userId,
+        },
+      },
+      distinct: ['name'],
+      select: {
+        name: true,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+
+    res.json({ technologies: technologies.map(t => t.name) });
   } catch (error) {
     res.status(500).json({ message: 'Erreur serveur', error });
   }

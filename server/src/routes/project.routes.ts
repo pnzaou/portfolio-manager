@@ -6,6 +6,7 @@ import {
   updateProject,
   deleteProject,
   deleteImage,
+  getAllTechnologies,
 } from '../controllers/project.controller';
 import { authMiddleware } from '../middleware/auth';
 import { upload } from '../middleware/upload';
@@ -14,6 +15,7 @@ const router = Router();
 
 router.use(authMiddleware);
 
+router.get('/technologies', getAllTechnologies)
 router.post('/', upload.array('images', 10), createProject);
 router.get('/', getAllProjects);
 router.get('/:id', getProject);

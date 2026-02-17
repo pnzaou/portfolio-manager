@@ -19,6 +19,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { formatDistanceToNow } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 export const Dashboard = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -147,21 +149,22 @@ export const Dashboard = () => {
         </div>
 
         {/* Statistiques */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           <div className="bg-card border rounded-lg p-6">
-            <p className="text-sm text-muted-foreground mb-1">Total de projets</p>
+            <p className="text-sm text-muted-foreground mb-1">
+              Total de projets
+            </p>
             <p className="text-3xl font-bold">{projects.length}</p>
           </div>
           <div className="bg-card border rounded-lg p-6">
-            <p className="text-sm text-muted-foreground mb-1">Images totales</p>
-            <p className="text-3xl font-bold">
-              {projects.reduce((acc, p) => acc + p.images.length, 0)}
-            </p>
-          </div>
-          <div className="bg-card border rounded-lg p-6">
-            <p className="text-sm text-muted-foreground mb-1">Technologies</p>
-            <p className="text-3xl font-bold">
-              {new Set(projects.flatMap((p) => p.technologies.map((t) => t.name))).size}
+            <p className="text-sm text-muted-foreground mb-1">Dernier projet</p>
+            <p className="text-lg font-medium">
+              {projects.length > 0
+                ? formatDistanceToNow(new Date(projects[0].createdAt), {
+                    addSuffix: true,
+                    locale: fr,
+                  })
+                : "Aucun projet"}
             </p>
           </div>
         </div>
@@ -185,11 +188,13 @@ export const Dashboard = () => {
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                {selectedProject ? 'Modifier le projet' : 'Nouveau projet'}
+                {selectedProject ? "Modifier le projet" : "Nouveau projet"}
               </DialogTitle>
             </DialogHeader>
             <ProjectForm
-              onSubmit={selectedProject ? handleUpdateProject : handleCreateProject}
+              onSubmit={
+                selectedProject ? handleUpdateProject : handleCreateProject
+              }
               initialData={selectedProject}
               isLoading={isSubmitting}
             />
@@ -202,8 +207,8 @@ export const Dashboard = () => {
             <AlertDialogHeader>
               <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
               <AlertDialogDescription>
-                Cette action est irréversible. Le projet et toutes ses images seront
-                définitivement supprimés.
+                Cette action est irréversible. Le projet et toutes ses images
+                seront définitivement supprimés.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

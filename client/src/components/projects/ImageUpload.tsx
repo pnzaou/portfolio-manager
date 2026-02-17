@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Upload, ImageIcon } from 'lucide-react';
+import { X, ImageIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 
@@ -7,7 +7,7 @@ interface ImageUploadProps {
   images: File[];
   onImagesChange: (images: File[]) => void;
   existingImages?: { id: string; url: string }[];
-  onDeleteExisting?: (imageId: string) => void;
+  onDeleteExisting?: (imageId: string) => Promise<void>;
 }
 
 export const ImageUpload = ({
@@ -17,6 +17,7 @@ export const ImageUpload = ({
   onDeleteExisting,
 }: ImageUploadProps) => {
   const [previews, setPreviews] = useState<string[]>([]);
+  const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -38,6 +39,19 @@ export const ImageUpload = ({
     const newPreviews = previews.filter((_, i) => i !== index);
     onImagesChange(newImages);
     setPreviews(newPreviews);
+  };
+
+  const handleDeleteExisting = async (imageId: string) => {
+    if (onDeleteExisting) {
+      try {
+        setDeletingImageId(imageId);
+        await onDeleteExisting(imageId);
+      } catch (error) {
+        // L'erreur est déjà gérée dans le parent
+      } finally {
+        setDeletingImageId(null);
+      }
+    }
   };
 
   return (
@@ -67,9 +81,14 @@ export const ImageUpload = ({
                   variant="destructive"
                   size="icon"
                   className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => onDeleteExisting(image.id)}
+                  onClick={() => handleDeleteExisting(image.id)}
+                  disabled={deletingImageId === image.id}
                 >
-                  <X className="h-4 w-4" />
+                  {deletingImageId === image.id ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <X className="h-4 w-4" />
+                  )}
                 </Button>
               )}
             </div>

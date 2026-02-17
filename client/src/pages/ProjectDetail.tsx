@@ -4,7 +4,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Edit, Trash2, Loader2, Calendar, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Loader2, Calendar, Image as ImageIcon, X } from 'lucide-react';
 import type { Project } from '@/types';
 import api from '@/lib/api';
 import toast from 'react-hot-toast';
@@ -29,6 +29,7 @@ export const ProjectDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -54,6 +55,25 @@ export const ProjectDetail = () => {
       navigate('/dashboard');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Erreur lors de la suppression');
+    }
+  };
+
+  const handleDeleteImage = async (imageId: string) => {
+    try {
+      setDeletingImageId(imageId);
+      await api.delete(`/projects/image/${imageId}`);
+      toast.success('Image supprimée avec succès !');
+      // Mettre à jour le state local
+      if (project) {
+        setProject({
+          ...project,
+          images: project.images.filter(img => img.id !== imageId)
+        });
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Erreur lors de la suppression de l\'image');
+    } finally {
+      setDeletingImageId(null);
     }
   };
 
@@ -133,15 +153,33 @@ export const ProjectDetail = () => {
                     {project.images.map((image) => (
                       <div
                         key={image.id}
-                        className="relative group cursor-pointer overflow-hidden rounded-lg border"
-                        onClick={() => setSelectedImage(image.url)}
+                        className="relative group overflow-hidden rounded-lg border"
                       >
                         <img
                           src={image.url}
                           alt={project.name}
-                          className="w-full h-64 object-cover transition-transform group-hover:scale-105"
+                          className="w-full h-64 object-cover cursor-pointer transition-transform group-hover:scale-105"
+                          onClick={() => setSelectedImage(image.url)}
                         />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                        
+                        {/* Bouton de suppression */}
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteImage(image.id);
+                          }}
+                          disabled={deletingImageId === image.id}
+                        >
+                          {deletingImageId === image.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <X className="h-4 w-4" />
+                          )}
+                        </Button>
                       </div>
                     ))}
                   </div>
