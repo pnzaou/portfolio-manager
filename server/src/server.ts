@@ -28,6 +28,17 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 
-app.listen(PORT, () => {
-  console.log(`✅ Serveur démarré sur le port ${PORT}`);
-});
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Portfolio Manager API is running!',
+    timestamp: new Date().toISOString()
+  })
+})
+
+if(process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`✅ Serveur démarré sur le port ${PORT}`);
+  });
+}
+
+export default app;
