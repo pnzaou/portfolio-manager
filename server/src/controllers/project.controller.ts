@@ -1,9 +1,8 @@
 import { Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import cloudinary from '../config/cloudinary';
 import { AuthRequest } from '../types';
+import { prisma } from '../lib/prisma';
 
-const prisma = new PrismaClient();
 
 // Créer un projet
 export const createProject = async (

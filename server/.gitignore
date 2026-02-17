@@ -43,3 +43,4 @@ coverage/
 
 # OS
 Thumbs.db
+/src/generated/prisma
