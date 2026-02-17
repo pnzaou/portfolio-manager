@@ -303,3 +303,49 @@ export const getAllTechnologies = async ( req: AuthRequest, res: Response ): Pro
     res.status(500).json({ message: 'Erreur serveur', error });
   }
 };
+
+// Récupérer les projets publics avec pagination
+export const getPublicProjects = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 12;
+    const skip = (page - 1) * limit;
+
+    // Compter le total de projets
+    const totalProjects = await prisma.project.count();
+
+    // Récupérer les projets paginés
+    const projects = await prisma.project.findMany({
+      include: {
+        images: true,
+        technologies: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+    });
+
+    // Calculer les métadonnées de pagination
+    const totalPages = Math.ceil(totalProjects / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    res.json({
+      projects,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalProjects,
+        projectsPerPage: limit,
+        hasNextPage,
+        hasPrevPage,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur serveur', error });
+  }
+};

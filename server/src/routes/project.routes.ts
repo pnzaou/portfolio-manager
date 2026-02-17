@@ -13,6 +13,8 @@ import { upload } from '../middleware/upload';
 
 const router = Router();
 
+router.get('/public', getPublicProjects);
+
 router.use(authMiddleware);
 
 router.get('/technologies', getAllTechnologies)
