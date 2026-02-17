@@ -18,8 +18,13 @@ app.use(helmet({
 
 app.use(morgan('combined'))
 
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.PORTFOLIO_URL,
+].filter((url): url is string => !!url);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL,
+  origin: allowedOrigins,
   methods: 'GET,POST,PUT,DELETE'
 }));
 app.use(express.json());
