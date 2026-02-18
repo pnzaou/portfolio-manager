@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import cloudinary from '../config/cloudinary';
 import { AuthRequest } from '../types';
 import { prisma } from '../lib/prisma';

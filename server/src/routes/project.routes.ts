@@ -7,6 +7,7 @@ import {
   deleteProject,
   deleteImage,
   getAllTechnologies,
+  getPublicProjects,
 } from '../controllers/project.controller';
 import { authMiddleware } from '../middleware/auth';
 import { upload } from '../middleware/upload';
