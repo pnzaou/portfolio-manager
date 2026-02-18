@@ -34,8 +34,8 @@ export const confirmationEmailTemplate = (name: string) => `
             <td style="background:#1a1a2e;padding:48px 40px;border-left:1px solid rgba(99,102,241,0.2);border-right:1px solid rgba(99,102,241,0.2);">
 
               <p style="margin:0 0 24px;color:#a1a1aa;font-size:15px;line-height:1.8;text-align:center;">
-                J'ai bien reçu ton message et je te répondrai dans les plus brefs délais. <br/>
-                En attendant, tu peux découvrir mes projets ou me suivre sur mes réseaux.
+                J'ai bien reçu votre message et je vous répondrai dans les plus brefs délais. <br/>
+                En attendant, vous pouvez découvrir mes projets ou me suivre sur mes réseaux.
               </p>
 
               <!-- Divider -->
@@ -43,7 +43,7 @@ export const confirmationEmailTemplate = (name: string) => `
 
               <!-- Social links -->
               <p style="margin:0 0 20px;color:#a1a1aa;font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;text-align:center;">
-                Retrouve-moi ici
+                Retrouvez-moi ici
               </p>
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
