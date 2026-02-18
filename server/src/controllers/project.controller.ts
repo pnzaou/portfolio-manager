@@ -7,7 +7,7 @@ import { prisma } from '../lib/prisma';
 // Créer un projet
 export const createProject = async ( req: AuthRequest, res: Response ): Promise<void> => {
   try {
-    const { name, description, technologies } = req.body;
+    const { name, description, link, technologies } = req.body;
     const files = req.files as Express.Multer.File[];
 
     if (!name || !description) {
@@ -20,6 +20,7 @@ export const createProject = async ( req: AuthRequest, res: Response ): Promise<
       data: {
         name,
         description,
+        link: link || null,
         userId: req.userId!,
       },
     });
@@ -139,7 +140,7 @@ export const getProject = async ( req: AuthRequest, res: Response ): Promise<voi
 export const updateProject = async ( req: AuthRequest, res: Response ): Promise<void> => {
   try {
     const { id } = req.params;
-    const { name, description, technologies } = req.body;
+    const { name, description, link, technologies } = req.body;
     const files = req.files as Express.Multer.File[];
 
     const project = await prisma.project.findFirst({
@@ -157,6 +158,7 @@ export const updateProject = async ( req: AuthRequest, res: Response ): Promise<
       data: {
         name: name || project.name,
         description: description || project.description,
+        link: link !== undefined ? link : project.link,
       },
     });
 

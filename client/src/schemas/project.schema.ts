@@ -18,6 +18,7 @@ export const loginSchema = z.object({
 export const projectSchema = z.object({
   name: z.string().min(3, 'Le nom doit contenir au moins 3 caractères'),
   description: z.string().min(10, 'La description doit contenir au moins 10 caractères'),
+  link: z.string().url('URL invalide').optional().or(z.literal('')),
   technologies: z.array(z.string()).min(1, 'Ajoutez au moins une technologie'),
   images: z.any().optional(),
 });

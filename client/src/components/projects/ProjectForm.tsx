@@ -105,6 +105,10 @@ export const ProjectForm = ({ onSubmit, initialData, isLoading }: ProjectFormPro
     const formData = new FormData();
     formData.append('name', data.name);
     formData.append('description', data.description);
+
+    if (data.link && data.link.trim()) {
+      formData.append("link", data.link);
+    }
     
     technologies.forEach((tech) => {
       formData.append('technologies', tech);
@@ -120,11 +124,13 @@ export const ProjectForm = ({ onSubmit, initialData, isLoading }: ProjectFormPro
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{initialData ? 'Modifier le projet' : 'Nouveau projet'}</CardTitle>
+        <CardTitle>
+          {initialData ? "Modifier le projet" : "Nouveau projet"}
+        </CardTitle>
         <CardDescription>
           {initialData
-            ? 'Mettez à jour les informations de votre projet'
-            : 'Ajoutez un nouveau projet à votre portfolio'}
+            ? "Mettez à jour les informations de votre projet"
+            : "Ajoutez un nouveau projet à votre portfolio"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -135,7 +141,7 @@ export const ProjectForm = ({ onSubmit, initialData, isLoading }: ProjectFormPro
             <Input
               id="name"
               placeholder="Mon super projet"
-              {...register('name')}
+              {...register("name")}
               disabled={isLoading}
             />
             {errors.name && (
@@ -150,29 +156,52 @@ export const ProjectForm = ({ onSubmit, initialData, isLoading }: ProjectFormPro
               id="description"
               placeholder="Décrivez votre projet en détail..."
               rows={6}
-              {...register('description')}
+              {...register("description")}
               disabled={isLoading}
               className="resize-none"
             />
             {errors.description && (
-              <p className="text-sm text-destructive">{errors.description.message}</p>
+              <p className="text-sm text-destructive">
+                {errors.description.message}
+              </p>
             )}
+          </div>
+
+          {/* Lien du projet */}
+          <div className="space-y-2">
+            <Label htmlFor="link">Lien du projet (optionnel)</Label>
+            <Input
+              id="link"
+              type="url"
+              placeholder="https://exemple.com"
+              {...register("link")}
+              disabled={isLoading}
+            />
+            {errors.link && (
+              <p className="text-sm text-destructive">{errors.link.message}</p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              URL du projet déployé (GitHub, site live, etc.)
+            </p>
           </div>
 
           {/* Technologies avec Select/Input intelligent */}
           <div className="space-y-2">
             <Label htmlFor="technology">Technologies & Outils *</Label>
-            
+
             {availableTechs.length > 0 && !useCustomInput ? (
               // Mode Select : si des technologies existent
               <div className="flex gap-2">
-                <Select onValueChange={addTechnologyFromSelect} disabled={isLoading}>
+                <Select
+                  onValueChange={addTechnologyFromSelect}
+                  disabled={isLoading}
+                >
                   <SelectTrigger className="flex-1">
                     <SelectValue placeholder="Sélectionnez une technologie..." />
                   </SelectTrigger>
                   <SelectContent>
                     {availableTechs
-                      .filter(tech => !technologies.includes(tech))
+                      .filter((tech) => !technologies.includes(tech))
                       .map((tech) => (
                         <SelectItem key={tech} value={tech}>
                           {tech}
@@ -197,7 +226,7 @@ export const ProjectForm = ({ onSubmit, initialData, isLoading }: ProjectFormPro
                   value={customTechInput}
                   onChange={(e) => setCustomTechInput(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === "Enter") {
                       e.preventDefault();
                       addCustomTechnology();
                     }
@@ -218,7 +247,7 @@ export const ProjectForm = ({ onSubmit, initialData, isLoading }: ProjectFormPro
                     variant="outline"
                     onClick={() => {
                       setUseCustomInput(false);
-                      setCustomTechInput('');
+                      setCustomTechInput("");
                     }}
                     disabled={isLoading}
                   >
@@ -254,7 +283,9 @@ export const ProjectForm = ({ onSubmit, initialData, isLoading }: ProjectFormPro
             )}
 
             {errors.technologies && (
-              <p className="text-sm text-destructive">{errors.technologies.message}</p>
+              <p className="text-sm text-destructive">
+                {errors.technologies.message}
+              </p>
             )}
           </div>
 
@@ -272,10 +303,10 @@ export const ProjectForm = ({ onSubmit, initialData, isLoading }: ProjectFormPro
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {initialData ? 'Mise à jour...' : 'Création...'}
+                  {initialData ? "Mise à jour..." : "Création..."}
                 </>
               ) : (
-                <>{initialData ? 'Mettre à jour' : 'Créer le projet'}</>
+                <>{initialData ? "Mettre à jour" : "Créer le projet"}</>
               )}
             </Button>
           </div>

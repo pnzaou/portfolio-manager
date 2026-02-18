@@ -29,6 +29,7 @@ export interface Project {
   id: string;
   name: string;
   description: string;
+  link?: string;
   createdAt: string;
   updatedAt: string;
   userId: string;
