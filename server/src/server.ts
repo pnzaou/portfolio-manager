@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
 import projectRoutes from './routes/project.routes';
+import contactRoute from './routes/contact.route'
 import helmet from 'helmet';
 import morgan from 'morgan';
 
@@ -32,6 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/contact', contactRoute);
 
 app.get('/', (req, res) => {
   res.json({
